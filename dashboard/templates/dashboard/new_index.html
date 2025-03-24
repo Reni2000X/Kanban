@@ -351,6 +351,18 @@
     .board-item .edit-board {
       color: #007acc;
     }
+
+    .delete-btn {
+    background: transparent;
+    border: none;
+    color: red;  /* Setzt die Textfarbe auf Rot */
+    font-size: 20px;  /* Vergrößert das "✖"-Symbol */
+    cursor: pointer;
+}
+
+.delete-btn:hover {
+    color: darkred;  /* Farbe ändert sich beim Überfahren mit der Maus */
+}
   </style>
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -368,7 +380,21 @@
   <div id="sidebar">
     {% csrf_token %}
     <h2>Boards</h2>
+    <input type="text" id="New Project Name" placeholder="Enter project name">
     <button id="create_new_project">new project</button>
+    <ul>
+      {% for item in x %}
+        <li>
+          {{ item.name }}  
+          <button onclick="editItem('{{ item.pk }}', '{{ item.name }}')">Edit</button>
+          <button class="delete-btn" onclick="deleteItem('{{ item.pk }}')">✖</button>
+        </li>
+      {% empty %}
+        <li>No data available</li>
+      {% endfor %}
+    </ul>
+    
+    
     <div id="boardsList">
         
     </div>
@@ -468,8 +494,9 @@ function getCookie(name) {
     let new_project_button =document.getElementById("create_new_project")
     new_project_button.addEventListener("click", function(){
       console.log("Hi")
+      let name_field =document.getElementById("New Project Name")
       let combinedData = {
-        name: "test Project",
+        name: name_field.value,
       };  
       let jsonFormData = JSON.stringify(combinedData);
       console.log(jsonFormData)
