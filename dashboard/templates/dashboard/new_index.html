@@ -1,0 +1,1510 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Kanban Board – Localization</title>
+  <style>
+    /* Grundlegendes Styling */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #121212;
+      color: #ffffff;
+      overflow: hidden;
+      position: relative;
+    }
+    /* Video-Hintergrund */
+    #backgroundVideo {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+    /* Header */
+    header {
+      position: fixed;
+      top: 0;
+      left: 217px; /* Sidebar-Breite angepasst */
+      width: calc(100% - 217px);
+      height: 70px;
+      background: rgba(30,30,30,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+    }
+    #boardTitle {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(30,30,30,0.8);
+      border: none;
+      color: #fff;
+      font-size: 1.8rem;
+      text-align: center;
+      background: transparent;
+    }
+    #shareButton {
+      position: absolute;
+      right: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,122,204,0.8);
+      border: none;
+      color: #fff;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    #shareButton:hover {
+      background: rgba(0,95,163,0.8);
+    }
+    /* Sidebar */
+    #sidebar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 184.5px; /* angepasst */
+      padding: 1rem;
+      background: rgba(30,30,30,0.8);
+      overflow-y: auto;
+      border-right: 1px solid #333;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+    }
+    /* Eigene Scrollbar für alle task-list Bereiche (Blau) */
+    .task-list::-webkit-scrollbar {
+      width: 10px;
+    }
+     #sidebar {
+  scrollbar-color: rgba(0,122,204,0.8) rgba(30,30,30,0.8);
+}
+
+    .task-list::-webkit-scrollbar-thumb {
+      background: rgba(0,122,204,0.8);
+      border-radius: 5px;
+    }
+    /* Felder Konfiguration (einklappbar) */
+    #taskFieldConfig {
+      margin: 0.5rem 0;
+      padding: 0.5rem;
+      background: transparent;
+      border: 2px solid rgba(0,122,204,0.8); /* Blauer Rahmen */
+      box-shadow: 0 0 10px rgba(0,122,204,0.6); /* Leuchtender Effekt */
+    }
+    #taskFieldConfig h3, #taskFieldConfig h4 {
+      margin: 0.5rem 0;
+    }
+    #originalFieldsList, #duplicateFieldsList {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    #originalFieldsList li, #duplicateFieldsList li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.3rem;
+    }
+    /* Sidebar Bottom */
+    #sidebarBottom {
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    #undoRedoContainer {
+      display: flex;
+      gap: 0.5rem;
+    }
+    #undoRedoContainer button {
+      width: 50%;
+    }
+    #sidebarBottom > button {
+      width: 100%;
+    }
+    /* Board Container */
+    #boardContainer {
+      margin-top: 70px;
+      margin-left: 217px; /* angepasst */
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+    /* Filter */
+    #taskFilterContainer {
+      padding: 0.5rem;
+      background: rgba(0,0,0,0.2);
+    }
+    #taskFilterInput {
+      width: 100%;
+      padding: 0.5rem;
+      border-radius: 5px;
+      border: none;
+      background: rgba(60,60,60,0.8);
+      color: #fff;
+    }
+    /* Board */
+    #board {
+      display: flex;
+      align-items: flex-start;
+      padding: 1rem;
+      overflow-x: scroll;
+      height: calc(100vh - 70px - 50px);
+      background: transparent;
+    }
+    #board::-webkit-scrollbar {
+      height: 10px;
+    }
+    #board::-webkit-scrollbar-thumb {
+      background: rgba(0,122,204,0.8);
+      border-radius: 5px;
+    }
+    /* Gruppen */
+    .group {
+      background: rgba(44,44,44,0.8);
+      border-radius: 8px;
+      padding: 0.5rem;
+      margin: 0 0.5rem;
+      width: 260px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      max-height: 90vh;
+      position: relative;
+      transition: background-color 0.2s;
+    }
+    .group.completed-recordings {
+      background: rgba(0,255,0,0.2);
+    }
+    .group.hovered {
+      background-color: rgba(0,127,255,0.2);
+    }
+    .group .group-header {
+      background: transparent;
+      padding: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+    }
+    .group .group-header .group-name {
+      flex-grow: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      margin-right: 10px;
+      border-bottom: 1px solid #444;
+      padding-bottom: 2px;
+    }
+    .group .group-header span.edit-group {
+      cursor: pointer;
+      font-size: 1rem;
+      color: #007acc;
+      margin-right: 5px;
+    }
+    .group .group-header span.delete-group {
+      cursor: pointer;
+      font-size: 1rem;
+      color: #ff5555;
+    }
+    .task-list {
+      flex-grow: 1;
+      overflow-y: auto;
+      padding: 0.5rem 0;
+    }
+    /* Tasks */
+    .task {
+      background: rgba(60,60,60,0.8);
+      margin: 0.5rem 0;
+      padding: 0.5rem;
+      border-radius: 5px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.1s;
+    }
+    .task:active {
+      transform: scale(0.98);
+    }
+    .task.dragging {
+      opacity: 0.5;
+    }
+    .task .edit-task, .task .delete-task {
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .task-inputs {
+      margin-top: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+    .task-inputs input {
+      width: 100%;
+      padding: 4px;
+      border: none;
+      border-radius: 3px;
+      font-size: 0.9rem;
+      background: rgba(60,60,60,0.8);
+      color: #fff;
+    }
+    .duplicate-task .task-inputs input {
+      background: rgba(60,60,60,0.8);
+      color: #ccc;
+      cursor: default;
+    }
+    /* Hervorgehobene (ausgewählte) Tasks */
+    .task.selected {
+      border: 2px solid #28a745;
+    }
+    /* Buttons */
+    .add-task, .add-group, .add-board {
+      background: rgba(0,122,204,0.8);
+      border: none;
+      color: #fff;
+      padding: 0.5rem;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      transition: background 0.2s;
+    }
+    .add-task:hover, .add-group:hover, .add-board:hover {
+      background: rgba(0,95,163,0.8);
+    }
+    #fixedAddGroupButton {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(0,122,204,0.8);
+      border: none;
+      color: #fff;
+      padding: 0.7rem 1.2rem;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.2s;
+      z-index: 10;
+    }
+    #fixedAddGroupButton:hover {
+      background: rgba(0,95,163,0.8);
+    }
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 300;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.6);
+    }
+    .modal-content {
+      background-color: rgba(44,44,44,0.8);
+      margin: 10% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 500px;
+      color: #fff;
+      border-radius: 8px;
+      position: relative;
+    }
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .close:hover,
+    .close:focus {
+      color: #fff;
+      text-decoration: none;
+    }
+    /* Sidebar-Elemente */
+    .board-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem;
+      border-bottom: 1px solid #444;
+      cursor: pointer;
+    }
+    .board-item span {
+      cursor: pointer;
+      margin-left: 10px;
+    }
+    .board-item .delete-board {
+      color: #ff5555;
+    }
+    .board-item .edit-board {
+      color: #007acc;
+    }
+  </style>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- SheetJS (xlsx) CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+  <!-- Video-Hintergrund -->
+  <video autoplay loop muted playsinline id="backgroundVideo">
+    <source src="https://cdn.pixabay.com/video/2020/06/16/42197-429661458_large.mp4">
+    Your browser does not support the video tag.
+  </video>
+
+  <!-- Sidebar -->
+  <div id="sidebar">
+    {% csrf_token %}
+    <h2>Boards</h2>
+    <button id="create_new_project">new project</button>
+    <div id="boardsList">
+        
+    </div>
+    <button id="addBoardButton" class="add-board">Neues Board hinzufügen</button>
+    <!-- Verschobene Felder-Konfiguration (einklappbar) -->
+    <button id="toggleFieldConfig" class="add-board" style="width: 100%; margin-top: 1rem; margin-bottom: 0.5rem;">Felder Konfiguration</button>
+    <div id="taskFieldConfig" style="display: none;">
+      <h3>Felder Konfiguration</h3>
+      <div>
+        <h4>Original Tasks</h4>
+        <ul id="originalFieldsList"></ul>
+      </div>
+      <div>
+        <h4>Duplikate</h4>
+        <ul id="duplicateFieldsList"></ul>
+      </div>
+    </div>
+    <div id="sidebarBottom">
+      <div id="undoRedoContainer">
+        <button id="undoButton" class="add-board">Undo</button>
+        <button id="redoButton" class="add-board">Redo</button>
+      </div>
+      <button id="uploadExcelButton" class="add-board">Upload Excel</button>
+      <button id="boardAnalyseButton" class="add-board">Board Analyse</button>
+      <button id="toggleSidebar" class="add-board">Toggle Sidebar</button>
+    </div>
+  </div>
+
+  <div id="boardContainer">
+    <header>
+      <input id="boardTitle" value="Mein Kanban Board" />
+      <button id="shareButton">Share Board</button>
+    </header>
+    <!-- Filter -->
+    <div id="taskFilterContainer">
+      <input type="text" id="taskFilterInput" placeholder="Filter tasks (z.B. Task1, Task2, Task3)">
+    </div>
+    <div id="board"></div>
+  </div>
+
+  <!-- Fester Button "Neue Gruppe hinzufügen" -->
+  <button id="fixedAddGroupButton" class="add-group">Neue Gruppe hinzufügen</button>
+
+  <!-- Modal zum Bearbeiten von Tasks -->
+  <div id="taskModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h2>Aufgabe bearbeiten</h2>
+      <label for="modalTaskTitle" id="modalTaskTitleLabel">Titel:</label>
+      <input type="text" id="modalTaskTitle" style="width:100%; margin-bottom:0.5rem; background: rgba(60,60,60,0.8); color:#fff;">
+      <br>
+      <label for="modalTaskDescription" id="modalTaskDescriptionLabel">Beschreibung:</label>
+      <textarea id="modalTaskDescription" style="width:100%; height:100px; margin-bottom:0.5rem; background: rgba(60,60,60,0.8); color:#fff;"></textarea>
+      <br>
+      <label for="modalTaskVoice" id="modalTaskVoiceLabel">Voice:</label>
+      <input type="text" id="modalTaskVoice" style="width:100%; margin-bottom:0.5rem; background: rgba(60,60,60,0.8); color:#fff;">
+      <br>
+      <label for="modalTaskScript" id="modalTaskScriptLabel">Script:</label>
+      <input type="text" id="modalTaskScript" style="width:100%; margin-bottom:0.5rem; background: rgba(60,60,60,0.8); color:#fff;">
+      <br>
+      <label for="modalTaskLines" id="modalTaskLinesLabel">Lines:</label>
+      <input type="number" id="modalTaskLines" style="width:100%; margin-bottom:0.5rem; background: rgba(60,60,60,0.8); color:#fff;">
+      <br>
+      <label for="modalTaskRecorded" id="modalTaskRecordedLabel">Recorded Lines:</label>
+      <input type="number" id="modalTaskRecorded" style="width:100%; margin-bottom:0.5rem; background: rgba(60,60,60,0.8); color:#fff;">
+      <br>
+      <label for="modalTaskRemaining" id="modalTaskRemainingLabel">Remaining Lines:</label>
+      <input type="number" id="modalTaskRemaining" style="width:100%; margin-bottom:0.5rem; background: rgba(60,60,60,0.8); color:#fff;">
+      <br>
+      <button id="saveTaskButton" class="add-task" style="margin-top:1rem;">Speichern</button>
+    </div>
+  </div>
+
+  <!-- Modal für Board Analyse -->
+  <div id="analysisModal" class="modal">
+    <div class="modal-content" style="max-width:800px;">
+      <span class="close" id="closeAnalysisModal">&times;</span>
+      <h2>Board Analyse</h2>
+      <div style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center;">
+        <canvas id="chartRecorded" width="200" height="200"></canvas>
+        <canvas id="chartReadyForDelivery" width="200" height="200"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Verstecktes File-Input für Excel -->
+  <input type="file" id="excelFileInput" accept=".xlsx, .xls" style="display: none;">
+
+  <script>
+
+function getCookie(name) {
+                      var value = "; " + document.cookie;
+                      var parts = value.split("; " + name + "=");
+                      if (parts.length == 2) return parts.pop().split(";").shift();}
+ let csrfToken = getCookie('csrftoken');  
+
+    let new_project_button =document.getElementById("create_new_project")
+    new_project_button.addEventListener("click", function(){
+      console.log("Hi")
+      let combinedData = {
+        name: "test Project",
+      };  
+      let jsonFormData = JSON.stringify(combinedData);
+      console.log(jsonFormData)
+
+
+      fetch('{% url "dashboard:create_new_project" %}', {
+               method: "POST",
+               body: jsonFormData,
+               headers: {           
+            "X-CSRFToken": csrfToken
+        }            
+           })
+           .then(response => {
+              if (!response.ok) {
+                  throw new Error('Network response was not ok');
+              }
+              return response.json();
+          })
+          .then(data => {
+              console.log('Response data:', data)
+})
+
+    })
+
+    /***** Undo/Redo - History *****/
+    let history = [];
+    let future = [];
+    function pushHistory() {
+      history.push(JSON.parse(JSON.stringify(boardsData)));
+      future = [];
+    }
+    window.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && !e.shiftKey && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        if (history.length > 0) {
+          future.push(JSON.parse(JSON.stringify(boardsData)));
+          boardsData = history.pop();
+          saveBoards();
+          renderBoard();
+        }
+      }
+      if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        if (future.length > 0) {
+          history.push(JSON.parse(JSON.stringify(boardsData)));
+          boardsData = future.pop();
+          saveBoards();
+          renderBoard();
+        }
+      }
+    });
+
+    /***** Horizontales Scrollen per Pfeiltaste *****/
+    window.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowLeft') {
+        boardEl.scrollTo({ left: 0, behavior: 'smooth' });
+      } else if (e.key === 'ArrowRight') {
+        boardEl.scrollTo({ left: boardEl.scrollWidth, behavior: 'smooth' });
+      }
+    });
+
+    /***** Daten & Initialisierung *****/
+    let boardsData = JSON.parse(localStorage.getItem('kanbanBoards')) || [];
+    const defaultGroupNames = ["Open", "Renaming", "Session Prep", "To Be Recorded", "Recorded", "For Post", "From Post", "Leveling", "For Qa", "Bugfixing", "In Regression", "Qa Done", "Ready For Delivery", "Delivered", "Completed Recordings"];
+    const defaultGroups = defaultGroupNames.map(name => ({ name: name, tasks: [] }));
+    if (boardsData.length === 0) {
+      boardsData.push({ name: "Mein Kanban Board", groups: defaultGroups });
+    }
+    let currentBoardIndex = 0;
+    const boardEl = document.getElementById('board');
+    const modal = document.getElementById('taskModal');
+    const closeModalSpan = document.getElementsByClassName('close')[0];
+    const modalTaskTitle = document.getElementById('modalTaskTitle');
+    const modalTaskDescription = document.getElementById('modalTaskDescription');
+    const modalTaskVoice = document.getElementById('modalTaskVoice');
+    const modalTaskScript = document.getElementById('modalTaskScript');
+    const modalTaskLines = document.getElementById('modalTaskLines');
+    const modalTaskRecorded = document.getElementById('modalTaskRecorded');
+    const modalTaskRemaining = document.getElementById('modalTaskRemaining');
+    const saveTaskButton = document.getElementById('saveTaskButton');
+    const boardsList = document.getElementById('boardsList');
+    const boardTitle = document.getElementById('boardTitle');
+    const sidebar = document.getElementById('sidebar');
+    const toggleSidebarButton = document.getElementById('toggleSidebar');
+    const fixedAddGroupButton = document.getElementById('fixedAddGroupButton');
+    const shareButton = document.getElementById('shareButton');
+    const header = document.querySelector('header');
+    const boardContainer = document.getElementById('boardContainer');
+    const analysisModal = document.getElementById('analysisModal');
+    const closeAnalysisModal = document.getElementById('closeAnalysisModal');
+    const boardAnalyseButton = document.getElementById('boardAnalyseButton');
+    const uploadExcelButton = document.getElementById('uploadExcelButton');
+    const excelFileInput = document.getElementById('excelFileInput');
+    const undoButton = document.getElementById('undoButton');
+    const redoButton = document.getElementById('redoButton');
+    const taskFilterInput = document.getElementById('taskFilterInput');
+
+    let chartRecordedInstance, chartReadyForDeliveryInstance;
+    let currentEditingGroupIndex = null;
+    let currentEditingTaskIndex = null;
+
+    // Default Ansicht: Original Tasks zeigen "lines", "remaining" und "recorded"; Duplikate zeigen nur "recorded"
+    let configOriginalFields = JSON.parse(localStorage.getItem("configOriginalFields")) || ["lines", "remaining", "recorded"];
+    let configDuplicateFields = JSON.parse(localStorage.getItem("configDuplicateFields")) || ["recorded"];
+
+    function saveBoards() {
+      localStorage.setItem('kanbanBoards', JSON.stringify(boardsData));
+    }
+
+    /***** Transfer abgeschlossener Tasks *****/
+    function checkAndTransferCompletedTasks() {
+      let tbrGroup = boardsData[currentBoardIndex].groups.find(g => g.name.toLowerCase() === "to be recorded");
+      if (!tbrGroup) return;
+      let compGroup = boardsData[currentBoardIndex].groups.find(g => g.name.toLowerCase() === "completed recordings");
+      if (!compGroup) {
+        compGroup = { name: "Completed Recordings", tasks: [] };
+        boardsData[currentBoardIndex].groups.push(compGroup);
+      }
+      for (let i = tbrGroup.tasks.length - 1; i >= 0; i--) {
+        let task = tbrGroup.tasks[i];
+        if (task.remainingLines !== "" && (parseInt(task.remainingLines) || 0) <= 0) {
+          task.recordedTotal = task.lines;
+          task.recordedLines = task.lines;
+          task.remainingLines = 0;
+          tbrGroup.tasks.splice(i, 1);
+          compGroup.tasks.push(task);
+        }
+      }
+    }
+
+    /***** Drop-Event: Nur erlaubte Verschiebungen *****/
+    function handleDrop(e, targetGroupName) {
+      // Definierte Gruppen-Sets
+      const setA = ["recorded", "for post", "from post", "leveling", "for qa", "bugfixing", "in regression", "qa done", "ready for delivery", "delivered"];
+      const setB = ["open", "renaming", "session prep", "to be recorded"];
+      
+      let multiDataStr = e.dataTransfer.getData('application/json');
+      if(multiDataStr) {
+        let multiData;
+        try {
+          multiData = JSON.parse(multiDataStr);
+        } catch(err) {}
+        if(multiData && multiData.multi) {
+          let sourceGroupIndex = multiData.groupIndex;
+          let sourceGroup = boardsData[currentBoardIndex].groups[sourceGroupIndex];
+          const sourceGroupName = sourceGroup.name.toLowerCase();
+          // Prüfe, ob das Ziel in demselben Set liegt
+          if (setA.includes(sourceGroupName) && !setA.includes(targetGroupName)) {
+            return;
+          }
+          if (setB.includes(sourceGroupName) && !setB.includes(targetGroupName)) {
+            return;
+          }
+          let indices = multiData.taskIndices;
+          indices.sort((a,b)=> b - a);
+          pushHistory();
+          let tasksToMove = [];
+          indices.forEach(idx => {
+            tasksToMove.push(sourceGroup.tasks[idx]);
+          });
+          indices.forEach(idx => {
+            sourceGroup.tasks.splice(idx, 1);
+          });
+          const targetGroup = boardsData[currentBoardIndex].groups.find(g => g.name.toLowerCase() === targetGroupName);
+          if(targetGroup) {
+            tasksToMove.forEach(task => {
+              targetGroup.tasks.push(task);
+            });
+          }
+          saveBoards();
+          renderBoard();
+          return;
+        }
+      }
+      const sourceGroupIndex = e.dataTransfer.getData('source-group');
+      const sourceTaskIndex = e.dataTransfer.getData('source-task');
+      if (sourceGroupIndex === "" || sourceTaskIndex === "") return;
+      const sourceGroup = boardsData[currentBoardIndex].groups[sourceGroupIndex];
+      const sourceGroupName = sourceGroup.name.toLowerCase();
+      // Prüfe, ob das Ziel in demselben Set liegt
+      if (setA.includes(sourceGroupName) && !setA.includes(targetGroupName)) {
+        return;
+      }
+      if (setB.includes(sourceGroupName) && !setB.includes(targetGroupName)) {
+        return;
+      }
+      pushHistory();
+      const task = sourceGroup.tasks[sourceTaskIndex];
+      sourceGroup.tasks.splice(sourceTaskIndex, 1);
+      const targetGroup = boardsData[currentBoardIndex].groups.find(g => g.name.toLowerCase() === targetGroupName);
+      if (targetGroup) {
+        targetGroup.tasks.push(task);
+      }
+      saveBoards();
+      renderBoard();
+    }
+
+    /***** Erzeugung der Gruppen (als Dropzone) *****/
+    function createGroupElement(group, groupIndex) {
+      const groupEl = document.createElement('div');
+      groupEl.classList.add('group');
+      if (group.name.toLowerCase() === "completed recordings") {
+        groupEl.classList.add("completed-recordings");
+      }
+      groupEl.setAttribute('data-group-index', groupIndex);
+      groupEl.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        groupEl.classList.add('hovered');
+      });
+      groupEl.addEventListener('dragleave', () => {
+        groupEl.classList.remove('hovered');
+      });
+      groupEl.addEventListener('drop', (e) => {
+        e.preventDefault();
+        groupEl.classList.remove('hovered');
+        const targetName = group.name.toLowerCase();
+        handleDrop(e, targetName);
+      });
+
+      const headerEl = document.createElement('div');
+      headerEl.classList.add('group-header');
+      const groupNameEl = document.createElement('span');
+      groupNameEl.classList.add('group-name');
+      groupNameEl.textContent = group.name || 'Neue Gruppe';
+      const editGroupBtn = document.createElement('span');
+      editGroupBtn.textContent = '✎';
+      editGroupBtn.classList.add('edit-group');
+      editGroupBtn.title = 'Gruppe bearbeiten';
+      editGroupBtn.onclick = () => {
+        pushHistory();
+        const newName = prompt('Neuer Gruppenname:', group.name);
+        if (newName) {
+          boardsData[currentBoardIndex].groups[groupIndex].name = newName;
+          saveBoards();
+          renderBoard();
+        }
+      };
+      const deleteGroupBtn = document.createElement('span');
+      deleteGroupBtn.textContent = '✖';
+      deleteGroupBtn.classList.add('delete-group');
+      deleteGroupBtn.title = 'Gruppe löschen';
+      deleteGroupBtn.onclick = () => {
+        if (confirm('Gruppe wirklich löschen?')) {
+          pushHistory();
+          boardsData[currentBoardIndex].groups.splice(groupIndex, 1);
+          saveBoards();
+          renderBoard();
+        }
+      };
+      headerEl.appendChild(groupNameEl);
+      headerEl.appendChild(editGroupBtn);
+      headerEl.appendChild(deleteGroupBtn);
+      groupEl.appendChild(headerEl);
+
+      const taskListEl = document.createElement('div');
+      taskListEl.classList.add('task-list');
+      group.tasks.forEach((task, taskIndex) => {
+        if (group.name.toLowerCase() === "to be recorded" && !task.id) {
+          task.id = Date.now() + Math.floor(Math.random() * 1000);
+        }
+        const isDuplicate = (task.originId !== undefined);
+        const taskEl = document.createElement('div');
+        taskEl.classList.add('task');
+        taskEl.setAttribute('data-task-index', taskIndex);
+        taskEl.setAttribute('data-task-name', task.name.toLowerCase());
+        if (isDuplicate) { taskEl.classList.add('duplicate-task'); }
+        const titleEl = document.createElement('div');
+        titleEl.textContent = task.name;
+        taskEl.appendChild(titleEl);
+        
+        // Hinzufügen der Icons: Blaues Stiftsymbol zum Bearbeiten, rotes X zum Löschen
+        const iconContainer = document.createElement('div');
+        iconContainer.style.position = "absolute";
+        iconContainer.style.top = "5px";
+        iconContainer.style.right = "5px";
+        iconContainer.style.display = "flex";
+        iconContainer.style.gap = "5px";
+        
+        const editIcon = document.createElement('span');
+        editIcon.classList.add('edit-task');
+        editIcon.style.color = '#007bff';
+        editIcon.style.cursor = 'pointer';
+        editIcon.textContent = '✎';
+        editIcon.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          openModal(task, groupIndex, taskIndex);
+        });
+        
+        const deleteIcon = document.createElement('span');
+        deleteIcon.classList.add('delete-task');
+        deleteIcon.style.color = '#ff0000';
+        deleteIcon.style.cursor = 'pointer';
+        deleteIcon.textContent = '✖';
+        deleteIcon.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          if(confirm("Task wirklich löschen?")) {
+            pushHistory();
+            boardsData[currentBoardIndex].groups[groupIndex].tasks.splice(taskIndex, 1);
+            saveBoards();
+            renderBoard();
+          }
+        });
+        
+        iconContainer.appendChild(editIcon);
+        iconContainer.appendChild(deleteIcon);
+        taskEl.appendChild(iconContainer);
+        
+        const inputsContainer = document.createElement('div');
+        inputsContainer.classList.add('task-inputs');
+
+        if (group.name.toLowerCase() === "completed recordings") {
+          const linesDisplay = document.createElement('input');
+          linesDisplay.type = 'number';
+          linesDisplay.placeholder = 'Lines';
+          linesDisplay.value = task.lines || '';
+          linesDisplay.readOnly = true;
+          inputsContainer.appendChild(linesDisplay);
+        } else if (group.name.toLowerCase() === "recorded") {
+          const recordedDisplay = document.createElement('input');
+          recordedDisplay.type = 'number';
+          recordedDisplay.placeholder = 'Recorded Lines';
+          recordedDisplay.value = (task.recordedLines !== undefined ? task.recordedLines : '');
+          recordedDisplay.readOnly = true;
+          inputsContainer.appendChild(recordedDisplay);
+        } else {
+          // Für andere Gruppen: Felder per Konfiguration anzeigen
+          let fields = isDuplicate ? configDuplicateFields : configOriginalFields;
+          fields.forEach(field => {
+            switch(field) {
+              case "lines":
+                if(!isDuplicate) {
+                  let linesInput = document.createElement('input');
+                  linesInput.type = 'number';
+                  linesInput.placeholder = 'Lines';
+                  linesInput.value = task.lines || '';
+                  linesInput.onchange = (ev) => {
+                    pushHistory();
+                    task.lines = parseInt(ev.target.value) || 0;
+                    saveBoards();
+                    renderBoard();
+                  };
+                  inputsContainer.appendChild(linesInput);
+                }
+                break;
+              case "recorded":
+                if(!isDuplicate) {
+                  let recordedInput = document.createElement('input');
+                  recordedInput.type = 'number';
+                  recordedInput.placeholder = 'Recorded Lines (hinzufügen)';
+                  recordedInput.value = "";
+                  recordedInput.onchange = (ev) => {
+                    pushHistory();
+                    let increment = parseInt(ev.target.value) || 0;
+                    if(increment > 0) {
+                      task.recordedTotal = (parseInt(task.recordedTotal) || 0) + increment;
+                      task.recordedLines = task.recordedTotal;
+                      task.remainingLines = (parseInt(task.remainingLines) || 0) - increment;
+                      const recordedGroup = boardsData[currentBoardIndex].groups.find(g => g.name.toLowerCase() === 'recorded');
+                      if(recordedGroup) {
+                        let duplicate = recordedGroup.tasks.find(t => t.originId === task.id);
+                        if(duplicate) {
+                          duplicate.recordedLines = (parseInt(duplicate.recordedLines) || 0) + increment;
+                        } else {
+                          const duplicateTask = {
+                            name: task.name,
+                            recordedLines: increment,
+                            originId: task.id,
+                            baseName: task.name,
+                            description: task.description || "",
+                            voice: task.voice || "",
+                            script: task.script || ""
+                          };
+                          recordedGroup.tasks.push(duplicateTask);
+                        }
+                      }
+                    }
+                    ev.target.value = "";
+                    saveBoards();
+                    renderBoard();
+                  };
+                  inputsContainer.appendChild(recordedInput);
+                } else {
+                  let recordedDisplay = document.createElement('input');
+                  recordedDisplay.type = 'number';
+                  recordedDisplay.placeholder = 'Recorded Lines';
+                  recordedDisplay.value = task.recordedLines || '';
+                  recordedDisplay.readOnly = true;
+                  inputsContainer.appendChild(recordedDisplay);
+                }
+                break;
+              case "remaining":
+                if(!isDuplicate) {
+                  let remainingInput = document.createElement('input');
+                  remainingInput.type = 'number';
+                  remainingInput.placeholder = 'Remaining Lines';
+                  remainingInput.value = task.remainingLines || '';
+                  remainingInput.onchange = (ev) => {
+                    pushHistory();
+                    task.remainingLines = parseInt(ev.target.value) || 0;
+                    saveBoards();
+                    renderBoard();
+                  };
+                  inputsContainer.appendChild(remainingInput);
+                }
+                break;
+              case "script":
+                let scriptInput = document.createElement('input');
+                scriptInput.type = 'text';
+                scriptInput.placeholder = 'Script';
+                scriptInput.value = task.script || '';
+                scriptInput.onchange = (ev) => {
+                  pushHistory();
+                  task.script = ev.target.value;
+                  saveBoards();
+                  renderBoard();
+                };
+                inputsContainer.appendChild(scriptInput);
+                break;
+              case "voice":
+                let voiceInput = document.createElement('input');
+                voiceInput.type = 'text';
+                voiceInput.placeholder = 'Voice';
+                voiceInput.value = task.voice || '';
+                voiceInput.onchange = (ev) => {
+                  pushHistory();
+                  task.voice = ev.target.value;
+                  saveBoards();
+                  renderBoard();
+                };
+                inputsContainer.appendChild(voiceInput);
+                break;
+            }
+          });
+        }
+        taskEl.appendChild(inputsContainer);
+        taskEl.setAttribute('draggable', 'true');
+
+        taskEl.addEventListener('click', (ev) => {
+          if(ev.target.tagName.toLowerCase() === 'input') return;
+          if(ev.ctrlKey || ev.metaKey) {
+            taskEl.classList.toggle('selected');
+            ev.stopPropagation();
+          } else {
+            const siblings = taskEl.parentElement.querySelectorAll('.task');
+            siblings.forEach(el => el.classList.remove('selected'));
+            taskEl.classList.add('selected');
+            openModal(task, groupIndex, taskIndex);
+          }
+        });
+
+        taskEl.addEventListener('dragstart', (e) => {
+          const selectedTasks = taskEl.parentElement.querySelectorAll('.task.selected');
+          if(selectedTasks.length > 1) {
+            let indices = [];
+            selectedTasks.forEach(el => {
+              let idx = parseInt(el.getAttribute('data-task-index'));
+              indices.push(idx);
+            });
+            e.dataTransfer.setData('application/json', JSON.stringify({ multi: true, groupIndex: groupIndex, taskIndices: indices }));
+          } else {
+            e.dataTransfer.setData('source-group', groupIndex);
+            e.dataTransfer.setData('source-task', taskIndex);
+          }
+          taskEl.classList.add('dragging');
+        });
+
+        taskEl.addEventListener('dragend', () => {
+          taskEl.classList.remove('dragging');
+        });
+
+        taskListEl.appendChild(taskEl);
+      });
+      groupEl.appendChild(taskListEl);
+      const addTaskBtn = document.createElement('button');
+      addTaskBtn.classList.add('add-task');
+      addTaskBtn.textContent = 'Neue Aufgabe';
+      addTaskBtn.onclick = () => {
+        pushHistory();
+        const taskName = prompt('Aufgabentitel:');
+        if (taskName) {
+          const newTask = {
+            name: taskName,
+            description: "",
+            voice: "",
+            script: "",
+            lines: "",
+            recordedLines: "",
+            remainingLines: "",
+            recordedTotal: ""
+          };
+          if (group.name.toLowerCase() === "to be recorded") {
+            newTask.id = Date.now() + Math.floor(Math.random() * 1000);
+          }
+          boardsData[currentBoardIndex].groups[groupIndex].tasks.push(newTask);
+          saveBoards();
+          renderBoard();
+        }
+      };
+      groupEl.appendChild(addTaskBtn);
+      return groupEl;
+    }
+
+    /***** Rendering des Boards *****/
+    function renderBoard() {
+      checkAndTransferCompletedTasks();
+      boardEl.innerHTML = '';
+      const currentBoard = boardsData[currentBoardIndex];
+      boardTitle.value = currentBoard.name;
+      currentBoard.groups.forEach((group, index) => {
+        boardEl.appendChild(createGroupElement(group, index));
+      });
+      filterTasks();
+    }
+
+    /***** Rendering der Board-Liste in der Sidebar *****/
+    function renderBoardsList() {
+      boardsList.innerHTML = '';
+      boardsData.forEach((board, index) => {
+        const boardItem = document.createElement('div');
+        boardItem.classList.add('board-item');
+        boardItem.textContent = board.name;
+        boardItem.onclick = () => {
+          currentBoardIndex = index;
+          renderBoard();
+        };
+        const editBoardBtn = document.createElement('span');
+        editBoardBtn.textContent = '✎';
+        editBoardBtn.classList.add('edit-board');
+        editBoardBtn.onclick = (ev) => {
+          ev.stopPropagation();
+          pushHistory();
+          const newName = prompt('Neuer Boardname:', board.name);
+          if (newName) {
+            boardsData[index].name = newName;
+            saveBoards();
+            renderBoardsList();
+            renderBoard();
+          }
+        };
+        const deleteBoardBtn = document.createElement('span');
+        deleteBoardBtn.textContent = '✖';
+        deleteBoardBtn.classList.add('delete-board');
+        deleteBoardBtn.onclick = (ev) => {
+          ev.stopPropagation();
+          if (confirm('Board wirklich löschen?')) {
+            pushHistory();
+            boardsData.splice(index, 1);
+            if (currentBoardIndex === index) { currentBoardIndex = 0; }
+            saveBoards();
+            renderBoardsList();
+            renderBoard();
+          }
+        };
+        boardItem.appendChild(editBoardBtn);
+        boardItem.appendChild(deleteBoardBtn);
+        boardsList.appendChild(boardItem);
+      });
+    }
+
+    /***** Filterfunktion *****/
+    function filterTasks() {
+      const filterText = taskFilterInput.value.trim().toLowerCase();
+      if (!filterText) {
+        const tasks = boardEl.querySelectorAll('.task');
+        tasks.forEach(taskEl => taskEl.style.display = "");
+      } else {
+        const filters = filterText.split(',').map(s => s.trim()).filter(s => s);
+        const tasks = boardEl.querySelectorAll('.task');
+        tasks.forEach(taskEl => {
+          const taskName = taskEl.getAttribute('data-task-name');
+          if (filters.includes(taskName)) {
+            taskEl.style.display = "";
+          } else {
+            taskEl.style.display = "none";
+          }
+        });
+      }
+    }
+    taskFilterInput.addEventListener('input', filterTasks);
+
+    /***** Modal zum Bearbeiten von Tasks *****/
+    function openModal(task, groupIndex, taskIndex) {
+      currentEditingGroupIndex = groupIndex;
+      currentEditingTaskIndex = taskIndex;
+      modalTaskTitle.value = task.name;
+      modalTaskDescription.value = task.description;
+      modalTaskVoice.value = task.voice || "";
+      modalTaskScript.value = task.script || "";
+      modalTaskLines.value = task.lines || "";
+      modalTaskRecorded.value = task.originId ? task.recordedLines || "" : "";
+      modalTaskRemaining.value = task.remainingLines || "";
+      if (task.originId) {
+        document.getElementById("modalTaskLinesLabel").style.display = "none";
+        modalTaskLines.style.display = "none";
+        document.getElementById("modalTaskRemainingLabel").style.display = "none";
+        modalTaskRemaining.style.display = "none";
+      } else {
+        document.getElementById("modalTaskLinesLabel").style.display = "block";
+        modalTaskLines.style.display = "block";
+        document.getElementById("modalTaskRemainingLabel").style.display = "block";
+        modalTaskRemaining.style.display = "block";
+      }
+      modal.style.display = 'block';
+    }
+    function closeModal() {
+      modal.style.display = 'none';
+      currentEditingGroupIndex = null;
+      currentEditingTaskIndex = null;
+    }
+    closeModalSpan.onclick = () => { closeModal(); }
+    window.onclick = (event) => {
+      if (event.target == modal) { closeModal(); }
+      if (event.target == analysisModal) { analysisModal.style.display = 'none'; }
+    }
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (modal.style.display === 'block') { closeModal(); }
+        if (analysisModal.style.display === 'block') { analysisModal.style.display = 'none'; }
+      }
+    });
+    saveTaskButton.onclick = () => {
+      if (currentEditingGroupIndex === null || currentEditingTaskIndex === null) return;
+      pushHistory();
+      const task = boardsData[currentBoardIndex].groups[currentEditingGroupIndex].tasks[currentEditingTaskIndex];
+      task.name = modalTaskTitle.value;
+      task.description = modalTaskDescription.value;
+      task.voice = modalTaskVoice.value;
+      task.script = modalTaskScript.value;
+      if (task.originId) {
+        task.recordedLines = parseInt(modalTaskRecorded.value) || 0;
+      } else {
+        task.lines = parseInt(modalTaskLines.value) || 0;
+        task.remainingLines = parseInt(modalTaskRemaining.value) || 0;
+        task.recordedLines = parseInt(modalTaskRecorded.value) || 0;
+        task.recordedTotal = task.recordedLines;
+      }
+      saveBoards();
+      renderBoard();
+      closeModal();
+    };
+
+    boardTitle.addEventListener('change', () => {
+      pushHistory();
+      boardsData[currentBoardIndex].name = boardTitle.value;
+      saveBoards();
+      renderBoardsList();
+    });
+
+    /***** Toggle Sidebar Button *****/
+    toggleSidebarButton.addEventListener('click', () => {
+      if (getComputedStyle(sidebar).display !== 'none') {
+        sidebar.style.display = 'none';
+        boardContainer.style.marginLeft = '0';
+        header.style.left = '0';
+        header.style.width = '100%';
+        document.body.appendChild(toggleSidebarButton);
+        toggleSidebarButton.style.position = 'fixed';
+        toggleSidebarButton.style.bottom = '20px';
+        toggleSidebarButton.style.left = '20px';
+        toggleSidebarButton.style.width = 'auto';
+      } else {
+        sidebar.style.display = 'flex';
+        boardContainer.style.marginLeft = '217px';
+        header.style.left = '217px';
+        header.style.width = 'calc(100% - 217px)';
+        document.getElementById('sidebarBottom').appendChild(toggleSidebarButton);
+        toggleSidebarButton.style.position = '';
+        toggleSidebarButton.style.bottom = '';
+        toggleSidebarButton.style.left = '';
+        toggleSidebarButton.style.width = '100%';
+      }
+    });
+
+    /***** Fester "Neue Gruppe hinzufügen" Button *****/
+    fixedAddGroupButton.addEventListener('click', () => {
+      pushHistory();
+      const groupName = prompt('Name der neuen Gruppe:');
+      if (groupName) {
+        boardsData[currentBoardIndex].groups.push({ name: groupName, tasks: [] });
+        saveBoards();
+        renderBoard();
+      }
+    });
+
+    /***** Excel Upload Funktionalität *****/
+    uploadExcelButton.addEventListener('click', () => {
+      excelFileInput.click();
+    });
+    excelFileInput.addEventListener('change', function(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const data = e.target.result;
+        const workbook = XLSX.read(data, { type: 'binary' });
+        const firstSheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[firstSheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+        if (jsonData.length < 2) {
+          alert("Die Excel-Datei enthält keine Daten.");
+          return;
+        }
+        const headers = jsonData[0].map(h => h.toString().trim().toLowerCase());
+        const roleIndex = headers.indexOf("role");
+        const voiceIndex = headers.indexOf("voice");
+        const scriptIndex = headers.indexOf("script");
+        const linesIndex = headers.indexOf("lines");
+        const recordedLinesIndex = headers.indexOf("recorded lines");
+        const remainingLinesIndex = headers.indexOf("remaining lines");
+        for (let i = 1; i < jsonData.length; i++) {
+          const row = jsonData[i];
+          if (row.length === 0) continue;
+          const role = roleIndex !== -1 ? row[roleIndex] : row[0] || "";
+          const voice = voiceIndex !== -1 ? row[voiceIndex] : row[1] || "";
+          const script = scriptIndex !== -1 ? row[scriptIndex] : "";
+          const lines = linesIndex !== -1 ? parseInt(row[linesIndex]) || 0 : parseInt(row[2]) || 0;
+          const recordedLines = recordedLinesIndex !== -1 ? parseInt(row[recordedLinesIndex]) || 0 : parseInt(row[3]) || 0;
+          const remainingLines = remainingLinesIndex !== -1 ? parseInt(row[remainingLinesIndex]) || 0 : parseInt(row[4]) || 0;
+          const newTask = {
+            name: role,
+            description: "",
+            voice: voice,
+            script: script,
+            lines: lines,
+            recordedLines: recordedLines,
+            remainingLines: remainingLines,
+            recordedTotal: recordedLines
+          };
+          pushHistory();
+          if (boardsData[currentBoardIndex].groups.length > 0) {
+            boardsData[currentBoardIndex].groups[0].tasks.push(newTask);
+          } else {
+            boardsData[currentBoardIndex].groups.push({ name: "Open", tasks: [newTask] });
+          }
+        }
+        saveBoards();
+        renderBoard();
+        alert("Excel Datei importiert!");
+        excelFileInput.value = "";
+      };
+      reader.readAsBinaryString(file);
+    });
+
+    /***** Undo/Redo Buttons *****/
+    undoButton.addEventListener('click', () => {
+      if (history.length > 0) {
+        future.push(JSON.parse(JSON.stringify(boardsData)));
+        boardsData = history.pop();
+        saveBoards();
+        renderBoard();
+      }
+    });
+    redoButton.addEventListener('click', () => {
+      if (future.length > 0) {
+        history.push(JSON.parse(JSON.stringify(boardsData)));
+        boardsData = future.pop();
+        saveBoards();
+        renderBoard();
+      }
+    });
+
+    /***** Weitere Board-Funktionen *****/
+    document.getElementById('addBoardButton').addEventListener('click', () => {
+      pushHistory();
+      const boardName = prompt('Name des neuen Boards:');
+      if (boardName) {
+        boardsData.push({ name: boardName, groups: defaultGroups.map(g => ({ name: g.name, tasks: [] })) });
+        saveBoards();
+        renderBoardsList();
+      }
+    });
+    shareButton.addEventListener('click', () => {
+      if (navigator.share) {
+        navigator.share({
+          title: 'Kanban Board',
+          url: window.location.href
+        }).catch((error) => console.log('Error sharing', error));
+      } else {
+        prompt('Kopiere folgenden Link:', window.location.href);
+      }
+    });
+
+    /***** Board Analyse *****/
+    boardAnalyseButton.addEventListener('click', () => {
+      // Oberes Diagramm bleibt unverändert
+      let upperGreen = 0, upperGrey = 0;
+      const upperGreenGroups = ["recorded", "for post", "from post", "leveling", "for qa", "bugfixing", "in regression", "qa done", "ready for delivery", "delivered"];
+      const upperGreyGroups = ["open", "renaming", "session prep", "to be recorded"];
+      boardsData[currentBoardIndex].groups.forEach(group => {
+        const gName = group.name.toLowerCase();
+        if (gName === "completed recordings") return;
+        if (upperGreenGroups.includes(gName)) {
+          group.tasks.forEach(task => {
+            upperGreen += parseInt(task.recordedLines) || 0;
+          });
+        }
+        if (upperGreyGroups.includes(gName)) {
+          group.tasks.forEach(task => {
+            let greyValue = parseInt(task.remainingLines);
+            if (isNaN(greyValue) || greyValue === 0) {
+              greyValue = parseInt(task.lines) || 0;
+            }
+            upperGrey += greyValue;
+          });
+        }
+      });
+
+      // Neues unteres Diagramm:
+      // Alle Lines in den Gruppen "open", "renaming", "session prep", "to be recorded" und "completed recordings" bilden die Gesamtanzahl (grau).
+      // Die Gruppen "ready for delivery" und "delivered" bilden den blauen Teil, der vom grauen Anteil abgezogen wird.
+      let totalLines = 0;
+      let blueLines = 0;
+      const greyGroups = ["open", "renaming", "session prep", "to be recorded", "completed recordings"];
+      const blueGroups = ["ready for delivery", "delivered"];
+      boardsData[currentBoardIndex].groups.forEach(group => {
+        const gName = group.name.toLowerCase();
+        group.tasks.forEach(task => {
+          const lines = parseInt(task.lines) || parseInt(task.recordedLines) || 0;
+          if (greyGroups.includes(gName)) {
+            totalLines += lines;
+          }
+          if (blueGroups.includes(gName)) {
+            blueLines += lines;
+          }
+        });
+      });
+      const greyPortion = Math.max(totalLines - blueLines, 0);
+
+      analysisModal.style.display = 'block';
+      if (chartRecordedInstance) { chartRecordedInstance.destroy(); }
+      if (chartReadyForDeliveryInstance) { chartReadyForDeliveryInstance.destroy(); }
+      chartRecordedInstance = new Chart(document.getElementById('chartRecorded').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Recorded (Grün)', 'Remaining (Grau)'],
+          datasets: [{
+            data: [upperGreen, upperGrey],
+            backgroundColor: ['#28a745', '#6c757d']
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            title: { display: true, text: 'Aufgenommene Lines (Oberes Diagramm)' },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return context.label + ': ' + context.parsed;
+                }
+              }
+            }
+          }
+        }
+      });
+      chartReadyForDeliveryInstance = new Chart(document.getElementById('chartReadyForDelivery').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Bereit für Delivery (Blau)', 'Rest (Grau)'],
+          datasets: [{
+            data: [blueLines, greyPortion],
+            backgroundColor: ['#007bff', '#6c757d']
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            title: { display: true, text: 'Delivery Status (Unteres Diagramm)' },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return context.label + ': ' + context.parsed;
+                }
+              }
+            }
+          }
+        }
+      });
+    });
+    closeAnalysisModal.onclick = () => { analysisModal.style.display = 'none'; };
+
+    /***** Konfiguration der Felder in der Sidebar *****/
+    function saveFieldConfig() {
+      localStorage.setItem("configOriginalFields", JSON.stringify(configOriginalFields));
+      localStorage.setItem("configDuplicateFields", JSON.stringify(configDuplicateFields));
+    }
+    function updateFieldConfigUI() {
+      // Für Original Tasks
+      const originalList = document.getElementById("originalFieldsList");
+      originalList.innerHTML = "";
+      const allOriginalFields = ["lines", "recorded", "remaining", "script", "voice"];
+      allOriginalFields.forEach(field => {
+        const li = document.createElement("li");
+        li.setAttribute("data-field", field);
+        const label = document.createElement("span");
+        label.textContent = field.charAt(0).toUpperCase() + field.slice(1);
+        li.appendChild(label);
+        const btnContainer = document.createElement("span");
+        const upBtn = document.createElement("button");
+        upBtn.textContent = "▲";
+        upBtn.style.marginRight = "0.3rem";
+        upBtn.addEventListener("click", () => {
+          const idx = configOriginalFields.indexOf(field);
+          if(idx > 0) {
+            [configOriginalFields[idx - 1], configOriginalFields[idx]] = [configOriginalFields[idx], configOriginalFields[idx - 1]];
+            saveFieldConfig();
+            updateFieldConfigUI();
+            renderBoard();
+          }
+        });
+        btnContainer.appendChild(upBtn);
+        const downBtn = document.createElement("button");
+        downBtn.textContent = "▼";
+        downBtn.style.marginRight = "0.3rem";
+        downBtn.addEventListener("click", () => {
+          const idx = configOriginalFields.indexOf(field);
+          if(idx !== -1 && idx < configOriginalFields.length - 1) {
+            [configOriginalFields[idx + 1], configOriginalFields[idx]] = [configOriginalFields[idx], configOriginalFields[idx + 1]];
+            saveFieldConfig();
+            updateFieldConfigUI();
+            renderBoard();
+          }
+        });
+        btnContainer.appendChild(downBtn);
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = configOriginalFields.includes(field);
+        checkbox.addEventListener("change", () => {
+          if(checkbox.checked) {
+            if(!configOriginalFields.includes(field)) {
+              configOriginalFields.push(field);
+            }
+          } else {
+            configOriginalFields = configOriginalFields.filter(f => f !== field);
+          }
+          saveFieldConfig();
+          updateFieldConfigUI();
+          renderBoard();
+        });
+        btnContainer.appendChild(checkbox);
+        li.appendChild(btnContainer);
+        originalList.appendChild(li);
+      });
+
+      // Für Duplikate
+      const duplicateList = document.getElementById("duplicateFieldsList");
+      duplicateList.innerHTML = "";
+      const allDuplicateFields = ["recorded", "script", "voice"];
+      allDuplicateFields.forEach(field => {
+        const li = document.createElement("li");
+        li.setAttribute("data-field", field);
+        const label = document.createElement("span");
+        label.textContent = field.charAt(0).toUpperCase() + field.slice(1);
+        li.appendChild(label);
+        const btnContainer = document.createElement("span");
+        const upBtn = document.createElement("button");
+        upBtn.textContent = "▲";
+        upBtn.style.marginRight = "0.3rem";
+        upBtn.addEventListener("click", () => {
+          const idx = configDuplicateFields.indexOf(field);
+          if(idx > 0) {
+            [configDuplicateFields[idx - 1], configDuplicateFields[idx]] = [configDuplicateFields[idx], configDuplicateFields[idx - 1]];
+            saveFieldConfig();
+            updateFieldConfigUI();
+            renderBoard();
+          }
+        });
+        btnContainer.appendChild(upBtn);
+        const downBtn = document.createElement("button");
+        downBtn.textContent = "▼";
+        downBtn.style.marginRight = "0.3rem";
+        downBtn.addEventListener("click", () => {
+          const idx = configDuplicateFields.indexOf(field);
+          if(idx !== -1 && idx < configDuplicateFields.length - 1) {
+            [configDuplicateFields[idx + 1], configDuplicateFields[idx]] = [configDuplicateFields[idx], configDuplicateFields[idx + 1]];
+            saveFieldConfig();
+            updateFieldConfigUI();
+            renderBoard();
+          }
+        });
+        btnContainer.appendChild(downBtn);
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = configDuplicateFields.includes(field);
+        checkbox.addEventListener("change", () => {
+          if(checkbox.checked) {
+            if(!configDuplicateFields.includes(field)) {
+              configDuplicateFields.push(field);
+            }
+          } else {
+            configDuplicateFields = configDuplicateFields.filter(f => f !== field);
+          }
+          saveFieldConfig();
+          updateFieldConfigUI();
+          renderBoard();
+        });
+        btnContainer.appendChild(checkbox);
+        li.appendChild(btnContainer);
+        duplicateList.appendChild(li);
+      });
+    }
+    updateFieldConfigUI();
+
+    /* Button zum Ein-/Ausklappen der Felder Konfiguration */
+    document.getElementById("toggleFieldConfig").addEventListener("click", function() {
+      const fieldConfig = document.getElementById("taskFieldConfig");
+      if (fieldConfig.style.display === "none" || fieldConfig.style.display === "") {
+        fieldConfig.style.display = "block";
+      } else {
+        fieldConfig.style.display = "none";
+      }
+    });
+
+    // Löschen von ausgewählten Tasks mit der Entf-Taste
+    document.addEventListener('keydown', (e) => {
+      if(e.key === "Delete") {
+        const selectedTasks = document.querySelectorAll('.task.selected');
+        if(selectedTasks.length > 0 && confirm("Markierte Aufgaben löschen?")) {
+          pushHistory();
+          selectedTasks.forEach(taskEl => {
+            const groupEl = taskEl.closest('.group');
+            const groupIndex = groupEl.getAttribute('data-group-index');
+            const taskIndex = taskEl.getAttribute('data-task-index');
+            if(groupIndex !== null && taskIndex !== null) {
+              boardsData[currentBoardIndex].groups[groupIndex].tasks.splice(taskIndex, 1);
+            }
+          });
+          saveBoards();
+          renderBoard();
+        }
+      }
+    });
+
+    renderBoardsList();
+    renderBoard();
+    document.getElementById("sidebarBottom").prepend(document.getElementById("toggleFieldConfig"));
+  </script>
+</body>
+</html>
